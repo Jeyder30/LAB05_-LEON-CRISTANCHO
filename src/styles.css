@@ -244,6 +244,16 @@ label {
   background: linear-gradient(135deg, #399be9, #2179c6);
 }
 
+.btn-danger {
+  border-color: rgba(255, 155, 155, 0.3);
+  color: #ffc0c0;
+}
+
+.btn-danger:hover:not(:disabled) {
+  border-color: rgba(255, 155, 155, 0.7);
+  background: rgba(128, 38, 53, 0.28);
+}
+
 .results-heading,
 .viewer-heading {
   display: flex;
@@ -290,6 +300,17 @@ label {
   border-color: rgba(255, 155, 155, 0.28);
   background: rgba(128, 38, 53, 0.14);
   color: var(--danger);
+}
+
+.retry-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.create-blueprint-link {
+  margin-top: 14px;
 }
 
 .success-message {
@@ -424,6 +445,12 @@ label {
   text-align: right !important;
 }
 
+.blueprint-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .point-count {
   min-width: 34px;
   padding: 4px 8px;
@@ -497,6 +524,92 @@ label {
   background: #0b1220;
 }
 
+.blueprint-canvas-interactive {
+  cursor: crosshair;
+  touch-action: manipulation;
+}
+
+.blueprint-canvas-interactive:focus-visible {
+  outline: 3px solid rgba(84, 180, 255, 0.5);
+  outline-offset: 3px;
+}
+
+.editor-page {
+  display: grid;
+  gap: 18px;
+}
+
+.editor-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.editor-workspace {
+  width: min(100%, 900px);
+}
+
+.blueprint-form {
+  display: grid;
+  gap: 14px;
+}
+
+.blueprint-form .results-heading {
+  margin-bottom: 0;
+}
+
+.editor-label {
+  margin-bottom: -8px;
+}
+
+.editor-points-json {
+  min-height: 140px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.editor-canvas-shell {
+  min-height: 0;
+}
+
+.editor-point-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.editor-point-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.detail-page {
+  display: grid;
+  gap: 12px;
+}
+
+.detail-page .editor-page-heading {
+  margin-bottom: 4px;
+}
+
+.login-form {
+  display: grid;
+  gap: 14px;
+  max-width: 680px;
+}
+
 .canvas-caption {
   margin: -2px 0 0;
   color: var(--muted);
@@ -551,6 +664,24 @@ label {
   .top-blueprint-item .btn-open {
     grid-column: 2 / -1;
     justify-self: start;
+  }
+
+  .blueprint-actions {
+    flex-wrap: wrap;
+  }
+
+  .editor-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .editor-point-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .retry-banner {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .results-heading,

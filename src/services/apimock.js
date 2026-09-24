@@ -72,6 +72,35 @@ const apimock = {
     blueprints.push(blueprint)
     return cloneBlueprint(blueprint)
   },
+
+  async update(author, name, updatedBlueprint) {
+    const index = blueprints.findIndex(
+      (item) => item.author === author && item.name === name,
+    )
+    if (index < 0) throw new Error(`No existe el plano ${author}/${name}.`)
+    if (!Array.isArray(updatedBlueprint?.points) || !updatedBlueprint.points.length) {
+      throw new Error('El plano debe incluir al menos un punto.')
+    }
+
+    const blueprint = cloneBlueprint({
+      ...blueprints[index],
+      ...updatedBlueprint,
+      author,
+      name,
+    })
+    blueprints[index] = blueprint
+    return cloneBlueprint(blueprint)
+  },
+
+  async delete(author, name) {
+    const index = blueprints.findIndex(
+      (item) => item.author === author && item.name === name,
+    )
+    if (index < 0) throw new Error(`No existe el plano ${author}/${name}.`)
+
+    blueprints.splice(index, 1)
+    return { author, name }
+  },
 }
 
 export default apimock

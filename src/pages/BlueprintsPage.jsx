@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import BlueprintForm from '../components/BlueprintForm.jsx'
+import { Link } from 'react-router-dom'
 import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
 import {
-  createBlueprint,
+  deleteBlueprint,
   fetchAuthors,
   fetchBlueprint,
   fetchByAuthor,
@@ -21,12 +21,13 @@ export default function BlueprintsPage() {
     byAuthorError,
     currentStatus,
     currentError,
-    createStatus,
-    createError,
+    deleteStatus,
+    deleteError,
   } = useSelector((s) => s.blueprints)
   const topFiveBlueprints = useSelector(selectTopFiveBlueprints)
   const [authorInput, setAuthorInput] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
+  const isAuthenticated = Boolean(localStorage.getItem('token'))
   const items = byAuthor[selectedAuthor] || []
 
   const totalPoints = useMemo(
@@ -50,11 +51,16 @@ export default function BlueprintsPage() {
     dispatch(fetchBlueprint({ author: blueprint.author, name: blueprint.name }))
   }
 
-  const createNewBlueprint = async (blueprint) => {
-    const action = await dispatch(createBlueprint(blueprint))
-    if (createBlueprint.fulfilled.match(action)) {
-      setAuthorInput(blueprint.author)
-      setSelectedAuthor(blueprint.author)
+  const retryBlueprint = () => {
+    if (current?.author && current?.name) {
+      dispatch(fetchBlueprint({ author: current.author, name: current.name }))
+    }
+  }
+
+  const removeBlueprint = (blueprint) => {
+    const confirmed = window.confirm(`Delete ${blueprint.author}/${blueprint.name}?`)
+    if (confirmed) {
+      dispatch(deleteBlueprint({ author: blueprint.author, name: blueprint.name }))
     }
   }
 
@@ -66,6 +72,11 @@ export default function BlueprintsPage() {
           <h2 className="panel-title" id="search-title">
             Find a blueprint
           </h2>
+          {isAuthenticated && (
+            <Link className="btn btn-primary create-blueprint-link" to="/blueprints/new">
+              Create blueprint
+            </Link>
+          )}
           <form className="search-form" onSubmit={getBlueprints}>
             <div className="search-field">
               <label className="sr-only" htmlFor="author-search">
@@ -105,9 +116,12 @@ export default function BlueprintsPage() {
             </p>
           )}
           {authorsStatus === 'failed' && (
-            <p className="status-message error-message" role="alert">
-              Could not load the overview: {authorsError}
-            </p>
+            <div className="status-message error-message retry-banner" role="alert">
+              <span>Could not load the overview: {authorsError}</span>
+              <button className="btn" type="button" onClick={() => dispatch(fetchAuthors())}>
+                Retry
+              </button>
+            </div>
           )}
           {authorsStatus === 'succeeded' && !topFiveBlueprints.length && (
             <p className="empty-message">No blueprints available yet.</p>
@@ -161,10 +175,22 @@ export default function BlueprintsPage() {
               Loading blueprints...
             </p>
           )}
-          {byAuthorStatus === 'failed' && (
-            <p className="status-message error-message" role="alert">
-              Could not load blueprints: {byAuthorError}
+          {deleteStatus === 'loading' && (
+            <p className="status-message" role="status">
+              Deleting blueprint...
             </p>
+          )}
+          {byAuthorStatus === 'failed' && (
+            <div className="status-message error-message retry-banner" role="alert">
+              <span>Could not load blueprints: {byAuthorError}</span>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => dispatch(fetchByAuthor(selectedAuthor))}
+              >
+                Retry
+              </button>
+            </div>
           )}
           {!selectedAuthor && byAuthorStatus !== 'loading' && (
             <p className="empty-message">Enter an author name to see their blueprints.</p>
@@ -187,7 +213,7 @@ export default function BlueprintsPage() {
                       Number of points
                     </th>
                     <th className="action-cell" scope="col">
-                      <span className="sr-only">Open blueprint</span>
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -199,14 +225,34 @@ export default function BlueprintsPage() {
                         <span className="point-count">{blueprint.points?.length || 0}</span>
                       </td>
                       <td className="action-cell">
-                        <button
-                          className="btn btn-open"
-                          type="button"
-                          onClick={() => openBlueprint(blueprint)}
-                          disabled={currentStatus === 'loading'}
-                        >
-                          Open
-                        </button>
+                        <div className="blueprint-actions">
+                          <button
+                            className="btn btn-open"
+                            type="button"
+                            onClick={() => openBlueprint(blueprint)}
+                            disabled={currentStatus === 'loading'}
+                          >
+                            Open
+                          </button>
+                          {isAuthenticated && (
+                            <>
+                              <Link
+                                className="btn"
+                                to={`/blueprints/${encodeURIComponent(blueprint.author)}/${encodeURIComponent(blueprint.name)}/edit`}
+                              >
+                                Edit
+                              </Link>
+                              <button
+                                className="btn btn-danger"
+                                type="button"
+                                disabled={deleteStatus === 'loading'}
+                                onClick={() => removeBlueprint(blueprint)}
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -221,7 +267,11 @@ export default function BlueprintsPage() {
           </footer>
         </section>
 
-        <BlueprintForm onSubmit={createNewBlueprint} status={createStatus} error={createError} />
+        {deleteStatus === 'failed' && (
+          <p className="status-message error-message" role="alert">
+            Could not delete blueprint: {deleteError}
+          </p>
+        )}
       </section>
 
       <section className="card blueprint-viewer" aria-labelledby="current-blueprint-title">
@@ -246,9 +296,12 @@ export default function BlueprintsPage() {
           </p>
         )}
         {currentStatus === 'failed' && (
-          <p className="status-message error-message" role="alert">
-            Could not open blueprint: {currentError}
-          </p>
+          <div className="status-message error-message retry-banner" role="alert">
+            <span>Could not open blueprint: {currentError}</span>
+            <button className="btn" type="button" onClick={retryBlueprint}>
+              Retry
+            </button>
+          </div>
         )}
         <div className="canvas-shell">
           <BlueprintCanvas points={current?.points || []} />

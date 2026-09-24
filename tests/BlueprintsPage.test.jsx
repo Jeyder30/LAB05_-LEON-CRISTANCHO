@@ -9,6 +9,7 @@ vi.mock('../src/features/blueprints/blueprintsSlice.js', () => ({
   fetchAuthors: () => ({ type: 'blueprints/fetchAuthors' }),
   fetchByAuthor: (author) => ({ type: 'blueprints/fetchByAuthor', payload: author }),
   fetchBlueprint: (payload) => ({ type: 'blueprints/fetchBlueprint', payload }),
+  deleteBlueprint: (payload) => ({ type: 'blueprints/deleteBlueprint', payload }),
   createBlueprint: (payload) => ({ type: 'blueprints/createBlueprint', payload }),
   selectTopFiveBlueprints: (state) => state.blueprints.all || [],
 }))
@@ -29,6 +30,10 @@ function makeStore(preloaded) {
       byAuthorError: null,
       createStatus: 'idle',
       createError: null,
+      updateStatus: 'idle',
+      updateError: null,
+      deleteStatus: 'idle',
+      deleteError: null,
       ...preloaded,
     },
     reducers: {},
