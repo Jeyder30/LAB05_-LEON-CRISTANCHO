@@ -1,32 +1,26 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  fetchAuthors,
-  fetchByAuthor,
-  fetchBlueprint,
-} from '../features/blueprints/blueprintsSlice.js'
+import { fetchByAuthor, fetchBlueprint } from '../features/blueprints/blueprintsSlice.js'
 import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
 
 export default function BlueprintsPage() {
   const dispatch = useDispatch()
-  const { byAuthor, current, status } = useSelector((s) => s.blueprints)
+  const { byAuthor, current, status, error } = useSelector((s) => s.blueprints)
   const [authorInput, setAuthorInput] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
   const items = byAuthor[selectedAuthor] || []
-
-  useEffect(() => {
-    dispatch(fetchAuthors())
-  }, [dispatch])
 
   const totalPoints = useMemo(
     () => items.reduce((acc, bp) => acc + (bp.points?.length || 0), 0),
     [items],
   )
 
-  const getBlueprints = () => {
-    if (!authorInput) return
-    setSelectedAuthor(authorInput)
-    dispatch(fetchByAuthor(authorInput))
+  const getBlueprints = (event) => {
+    event.preventDefault()
+    const author = authorInput.trim()
+    if (!author || status === 'loading') return
+    setSelectedAuthor(author)
+    dispatch(fetchByAuthor(author))
   }
 
   const openBlueprint = (bp) => {
@@ -38,17 +32,23 @@ export default function BlueprintsPage() {
       <section className="grid" style={{ gap: 16 }}>
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Blueprints</h2>
-          <div style={{ display: 'flex', gap: 12 }}>
+          <form onSubmit={getBlueprints} style={{ display: 'flex', gap: 12 }}>
             <input
               className="input"
+              aria-label="Author"
               placeholder="Author"
+              required
               value={authorInput}
               onChange={(e) => setAuthorInput(e.target.value)}
             />
-            <button className="btn primary" onClick={getBlueprints}>
+            <button
+              className="btn primary"
+              type="submit"
+              disabled={!authorInput.trim() || status === 'loading'}
+            >
               Get blueprints
             </button>
-          </div>
+          </form>
         </div>
 
         <div className="card">
@@ -56,7 +56,13 @@ export default function BlueprintsPage() {
             {selectedAuthor ? `${selectedAuthor}'s blueprints:` : 'Results'}
           </h3>
           {status === 'loading' && <p>Cargando...</p>}
-          {!items.length && status !== 'loading' && <p>Sin resultados.</p>}
+          {status === 'failed' && (
+            <p role="alert">No fue posible consultar los planos: {error}</p>
+          )}
+          {!selectedAuthor && <p>Ingresa el nombre de un autor para consultar sus planos.</p>}
+          {selectedAuthor && !items.length && status !== 'loading' && status !== 'failed' && (
+            <p>Sin resultados para este autor.</p>
+          )}
           {!!items.length && (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>

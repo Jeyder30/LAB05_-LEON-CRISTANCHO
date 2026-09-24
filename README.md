@@ -18,6 +18,8 @@ Ver la especificación de glosario clave, consulta las [Definiciones del laborat
 
 ## Endpoints esperados (ajústalos si tu backend quedo diferente)
 
+Para consultar el backend de LAB03, el cliente usa `GET /api/v1/blueprints/{author}` y desempaqueta los planos desde `data`.
+
 - `GET /api/blueprints` → lista general o catálogo para derivar autores.
 - `GET /api/blueprints/{author}`
 - `GET /api/blueprints/{author}/{name}`

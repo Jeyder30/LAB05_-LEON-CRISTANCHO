@@ -9,8 +9,20 @@ export const fetchAuthors = createAsyncThunk('blueprints/fetchAuthors', async ()
 })
 
 export const fetchByAuthor = createAsyncThunk('blueprints/fetchByAuthor', async (author) => {
-  const { data } = await api.get(`/blueprints/${encodeURIComponent(author)}`)
-  return { author, items: data }
+  try {
+    const response = await api.get(`/v1/blueprints/${encodeURIComponent(author)}`)
+    const payload = response.data?.data ?? response.data
+
+    if (!Array.isArray(payload)) {
+      throw new Error('La respuesta del servidor no contiene una lista de planos.')
+    }
+
+    return { author, items: payload }
+  } catch (error) {
+    // LAB03 responds with 404 when an author has no blueprints.
+    if (error.response?.status === 404) return { author, items: [] }
+    throw error
+  }
 })
 
 export const fetchBlueprint = createAsyncThunk(
@@ -53,6 +65,17 @@ const slice = createSlice({
       })
       .addCase(fetchByAuthor.fulfilled, (s, a) => {
         s.byAuthor[a.payload.author] = a.payload.items
+        s.status = 'succeeded'
+        s.error = null
+      })
+      .addCase(fetchByAuthor.pending, (s, a) => {
+        s.status = 'loading'
+        s.error = null
+        s.byAuthor[a.meta.arg] = []
+      })
+      .addCase(fetchByAuthor.rejected, (s, a) => {
+        s.status = 'failed'
+        s.error = a.error.message
       })
       .addCase(fetchBlueprint.fulfilled, (s, a) => {
         s.current = a.payload
