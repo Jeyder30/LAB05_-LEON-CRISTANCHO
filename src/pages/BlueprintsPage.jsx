@@ -13,7 +13,7 @@ export default function BlueprintsPage() {
   const items = byAuthor[selectedAuthor] || []
 
   const totalPoints = useMemo(
-    () => items.reduce((acc, bp) => acc + (bp.points?.length || 0), 0),
+    () => items.reduce((acc, blueprint) => acc + (blueprint.points?.length || 0), 0),
     [items],
   )
 
@@ -25,91 +25,101 @@ export default function BlueprintsPage() {
     dispatch(fetchByAuthor(author))
   }
 
-  const openBlueprint = (bp) => {
-    dispatch(fetchBlueprint({ author: bp.author, name: bp.name }))
+  const openBlueprint = (blueprint) => {
+    dispatch(fetchBlueprint({ author: blueprint.author, name: blueprint.name }))
   }
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: '1.1fr 1.4fr', gap: 24 }}>
-      <section className="grid" style={{ gap: 16 }}>
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Blueprints</h2>
-          <form onSubmit={getBlueprints} style={{ display: 'flex', gap: 12 }}>
-            <input
-              className="input"
-              aria-label="Author"
-              placeholder="Author"
-              required
-              value={authorInput}
-              onChange={(e) => setAuthorInput(e.target.value)}
-            />
+    <main className="blueprints-layout">
+      <section className="blueprints-sidebar" aria-label="Blueprint search and results">
+        <section className="card search-panel" aria-labelledby="search-title">
+          <p className="eyebrow">Blueprint library</p>
+          <h2 className="panel-title" id="search-title">
+            Find a blueprint
+          </h2>
+          <form className="search-form" onSubmit={getBlueprints}>
+            <div className="search-field">
+              <label className="sr-only" htmlFor="author-search">
+                Author
+              </label>
+              <input
+                id="author-search"
+                className="input"
+                placeholder="Enter an author name"
+                required
+                value={authorInput}
+                onChange={(event) => setAuthorInput(event.target.value)}
+              />
+            </div>
             <button
-              className="btn primary"
+              className="btn btn-primary"
               type="submit"
               disabled={!authorInput.trim() || status === 'loading'}
             >
               Get blueprints
             </button>
           </form>
-        </div>
+        </section>
 
-        <div className="card">
-          <h3 style={{ marginTop: 0 }}>
-            {selectedAuthor ? `${selectedAuthor}'s blueprints:` : 'Results'}
-          </h3>
-          {status === 'loading' && <p>Cargando...</p>}
+        <section className="card results-panel" aria-labelledby="results-title">
+          <div className="results-heading">
+            <div>
+              <p className="eyebrow">Author results</p>
+              <h2 className="panel-title" id="results-title">
+                {selectedAuthor ? `${selectedAuthor}'s blueprints` : 'Results'}
+              </h2>
+            </div>
+            {selectedAuthor && (
+              <span className="result-count">
+                {items.length} {items.length === 1 ? 'blueprint' : 'blueprints'}
+              </span>
+            )}
+          </div>
+
+          {status === 'loading' && (
+            <p className="status-message" role="status">
+              Loading blueprints...
+            </p>
+          )}
           {status === 'failed' && (
-            <p role="alert">No fue posible consultar los planos: {error}</p>
+            <p className="status-message error-message" role="alert">
+              Could not load blueprints: {error}
+            </p>
           )}
-          {!selectedAuthor && <p>Ingresa el nombre de un autor para consultar sus planos.</p>}
+          {!selectedAuthor && status !== 'loading' && (
+            <p className="empty-message">Enter an author name to see their blueprints.</p>
+          )}
           {selectedAuthor && !items.length && status !== 'loading' && status !== 'failed' && (
-            <p>Sin resultados para este autor.</p>
+            <p className="empty-message">No blueprints found for this author.</p>
           )}
+
           {!!items.length && (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="table-scroll">
+              <table className="blueprints-table">
+                <caption className="sr-only">Blueprints created by {selectedAuthor}</caption>
                 <thead>
                   <tr>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '8px',
-                        borderBottom: '1px solid #334155',
-                      }}
-                    >
-                      Blueprint name
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'right',
-                        padding: '8px',
-                        borderBottom: '1px solid #334155',
-                      }}
-                    >
+                    <th scope="col">Blueprint name</th>
+                    <th className="numeric-cell" scope="col">
                       Number of points
                     </th>
-                    <th style={{ padding: '8px', borderBottom: '1px solid #334155' }}></th>
+                    <th className="action-cell" scope="col">
+                      <span className="sr-only">Open blueprint</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((bp) => (
-                    <tr key={bp.name}>
-                      <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
-                        {bp.name}
+                  {items.map((blueprint) => (
+                    <tr key={blueprint.name}>
+                      <td className="blueprint-name-cell">{blueprint.name}</td>
+                      <td className="numeric-cell">
+                        <span className="point-count">{blueprint.points?.length || 0}</span>
                       </td>
-                      <td
-                        style={{
-                          padding: '8px',
-                          textAlign: 'right',
-                          borderBottom: '1px solid #1f2937',
-                        }}
-                      >
-                        {bp.points?.length || 0}
-                      </td>
-                      <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
+                      <td className="action-cell">
                         <button
-                          className="btn"
-                          onClick={() => openBlueprint(bp)}
+                          className="btn btn-open"
+                          type="button"
+                          onClick={() => openBlueprint(blueprint)}
                           disabled={currentStatus === 'loading'}
                         >
                           Open
@@ -121,18 +131,45 @@ export default function BlueprintsPage() {
               </table>
             </div>
           )}
-          <p style={{ marginTop: 12, fontWeight: 700 }}>Total user points: {totalPoints}</p>
-        </div>
+
+          <footer className="results-footer">
+            <span>Total user points</span>
+            <strong>{totalPoints}</strong>
+          </footer>
+        </section>
       </section>
 
-      <section className="card">
-        <h3 style={{ marginTop: 0 }}>Current blueprint: {current?.name || '—'}</h3>
-        {currentStatus === 'loading' && <p role="status">Cargando plano...</p>}
-        {currentStatus === 'failed' && (
-          <p role="alert">No fue posible abrir el plano: {currentError}</p>
+      <section className="card blueprint-viewer" aria-labelledby="current-blueprint-title">
+        <div className="viewer-heading">
+          <div>
+            <p className="eyebrow">Canvas</p>
+            <h2 className="panel-title" id="current-blueprint-title">
+              Current blueprint
+            </h2>
+          </div>
+          <span className="viewer-point-count">
+            {current?.points?.length || 0} {current?.points?.length === 1 ? 'point' : 'points'}
+          </span>
+        </div>
+
+        <p className="current-blueprint-name" aria-live="polite">
+          {current?.name || 'No blueprint selected'}
+        </p>
+        {currentStatus === 'loading' && (
+          <p className="status-message" role="status">
+            Loading blueprint...
+          </p>
         )}
-        <BlueprintCanvas points={current?.points || []} />
+        {currentStatus === 'failed' && (
+          <p className="status-message error-message" role="alert">
+            Could not open blueprint: {currentError}
+          </p>
+        )}
+        <div className="canvas-shell">
+          <BlueprintCanvas points={current?.points || []} />
+        </div>
+        <p className="canvas-caption">Blueprint points are connected in their stored order.</p>
       </section>
-    </div>
+    </main>
   )
 }

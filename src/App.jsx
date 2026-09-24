@@ -7,9 +7,9 @@ import NotFound from './pages/NotFound.jsx'
 export default function App() {
   return (
     <div className="container">
-      <header>
-        <h1>ECI - Laboratorio de Blueprints en React</h1>
-        <nav>
+      <header className="app-header">
+        <h1 className="brand-title">ECI - Laboratorio de Blueprints en React</h1>
+        <nav className="site-nav">
           <NavLink to="/" end>
             Blueprints
           </NavLink>

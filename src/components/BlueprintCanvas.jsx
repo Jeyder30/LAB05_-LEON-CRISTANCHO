@@ -74,18 +74,13 @@ export default function BlueprintCanvas({ points = [], width = 520, height = 360
   return (
     <canvas
       id="blueprint-canvas"
+      className="blueprint-canvas"
       ref={ref}
       width={width}
       height={height}
       role="img"
       aria-label="Lienzo del blueprint actual"
-      style={{
-        background: '#0b1220',
-        border: '1px solid #334155',
-        borderRadius: 12,
-        width: '100%',
-        maxWidth: width,
-      }}
+      style={{ '--canvas-max-width': `${width}px` }}
     />
   )
 }
