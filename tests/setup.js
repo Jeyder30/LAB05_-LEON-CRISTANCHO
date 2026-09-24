@@ -1,38 +1,24 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom/vitest'
+import { cleanup } from '@testing-library/react'
+import { afterEach, beforeEach, vi } from 'vitest'
 
-// ---- Canvas mock para jsdom ----
-if (!HTMLCanvasElement.prototype.getContext) {
-  HTMLCanvasElement.prototype.getContext = () => {
-    const noop = () => {}
-    return {
-      canvas: {},
-      fillRect: noop,
-      clearRect: noop,
-      beginPath: noop,
-      moveTo: noop,
-      lineTo: noop,
-      stroke: noop,
-      arc: noop,
-      fill: noop,
-      strokeRect: noop,
-      closePath: noop,
-      save: noop,
-      restore: noop,
-      setTransform: noop,
-      translate: noop,
-      scale: noop,
-      rotate: noop,
-      transform: noop,
-      drawImage: noop,
-      fillText: noop,
-      measureText: () => ({ width: 0 }),
-      putImageData: noop,
-      createLinearGradient: () => ({ addColorStop: noop }),
-      createPattern: () => ({}),
-      createRadialGradient: () => ({ addColorStop: noop }),
-      getImageData: () => ({}),
-      getLineDash: () => [],
-      setLineDash: noop,
-    }
-  }
+const canvasContext = {
+  clearRect: vi.fn(),
+  fillRect: vi.fn(),
+  beginPath: vi.fn(),
+  moveTo: vi.fn(),
+  lineTo: vi.fn(),
+  stroke: vi.fn(),
+  arc: vi.fn(),
+  fill: vi.fn(),
 }
+
+vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => canvasContext)
+
+afterEach(() => {
+  cleanup()
+})
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})

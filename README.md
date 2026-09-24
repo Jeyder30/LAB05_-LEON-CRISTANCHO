@@ -136,7 +136,7 @@ VITE_USE_MOCK=true
 ### Notas rápidas y recomendaciones
 
 - Para el canvas en tests con jsdom: agregar un mock de `HTMLCanvasElement.prototype.getContext` en `tests/setup.js`.
-- Para usar `@testing-library/jest-dom` con Vitest: en `tests/setup.js` importar `import '@testing-library/jest-dom'` y asegurarse de que Vitest provea el global `expect` (configurar `vitest.config.js` con la opción `test: { globals: true, setupFiles: './tests/setup.js' }`).
+- Para usar `@testing-library/jest-dom` con Vitest: importar `@testing-library/jest-dom/vitest` en `tests/setup.js`; la suite también limpia el DOM después de cada prueba.
 - Para la conmutación de servicios en Vite, usar `import.meta.env.VITE_USE_MOCK` para leer la variable en tiempo de ejecución.
 
 ## 📌 Recomendaciones y actividades sugeridas para el exito del laboratorio
