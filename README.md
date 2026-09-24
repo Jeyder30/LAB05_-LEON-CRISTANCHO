@@ -45,7 +45,10 @@ Crea un archivo `.env` en la raíz:
 
 ```variable
 VITE_API_BASE_URL=http://localhost:8080/api
+VITE_USE_MOCK=true
 ```
+
+`VITE_USE_MOCK=true` usa datos de prueba en memoria; cambia a `false` para consumir la API de LAB03 con Axios.
 
 > **Tip:** en producción usa variables seguras o un _reverse proxy_.
 

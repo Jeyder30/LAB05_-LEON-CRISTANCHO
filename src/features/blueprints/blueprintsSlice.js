@@ -1,37 +1,21 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import api from '../../services/apiClient.js'
+import blueprintsService from '../../services/blueprintsService.js'
 
 export const fetchAuthors = createAsyncThunk('blueprints/fetchAuthors', async () => {
-  const { data } = await api.get('/blueprints')
-  // Expecting API returns array of {author, name, points}
-  const authors = [...new Set(data.map((bp) => bp.author))]
+  const blueprints = await blueprintsService.getAll()
+  const authors = [...new Set(blueprints.map((blueprint) => blueprint.author))]
   return authors
 })
 
 export const fetchByAuthor = createAsyncThunk('blueprints/fetchByAuthor', async (author) => {
-  try {
-    const response = await api.get(`/v1/blueprints/${encodeURIComponent(author)}`)
-    const payload = response.data?.data ?? response.data
-
-    if (!Array.isArray(payload)) {
-      throw new Error('La respuesta del servidor no contiene una lista de planos.')
-    }
-
-    return { author, items: payload }
-  } catch (error) {
-    // LAB03 responds with 404 when an author has no blueprints.
-    if (error.response?.status === 404) return { author, items: [] }
-    throw error
-  }
+  const items = await blueprintsService.getByAuthor(author)
+  return { author, items }
 })
 
 export const fetchBlueprint = createAsyncThunk(
   'blueprints/fetchBlueprint',
   async ({ author, name }) => {
-    const response = await api.get(
-      `/v1/blueprints/${encodeURIComponent(author)}/${encodeURIComponent(name)}`,
-    )
-    const blueprint = response.data?.data ?? response.data
+    const blueprint = await blueprintsService.getByAuthorAndName(author, name)
 
     if (!blueprint || !Array.isArray(blueprint.points)) {
       throw new Error('La respuesta del servidor no contiene los puntos del plano.')
@@ -42,8 +26,7 @@ export const fetchBlueprint = createAsyncThunk(
 )
 
 export const createBlueprint = createAsyncThunk('blueprints/createBlueprint', async (payload) => {
-  const { data } = await api.post('/blueprints', payload)
-  return data
+  return blueprintsService.create(payload)
 })
 
 const slice = createSlice({
