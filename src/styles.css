@@ -292,6 +292,79 @@ label {
   color: var(--danger);
 }
 
+.success-message {
+  border-color: rgba(119, 226, 173, 0.26);
+  background: rgba(26, 121, 83, 0.13);
+  color: #9ce9c0;
+}
+
+.top-blueprint-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.top-blueprint-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(7, 17, 31, 0.35);
+}
+
+.rank-number {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(84, 180, 255, 0.12);
+  color: #bfe3ff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.top-blueprint-info {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.top-blueprint-info strong,
+.top-blueprint-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-blueprint-info strong {
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.top-blueprint-info span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.top-blueprint-count {
+  color: #c6d9ec;
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.top-blueprint-count small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
 .table-scroll {
   width: 100%;
   overflow-x: auto;
@@ -469,6 +542,15 @@ label {
 
   .search-form .btn {
     width: 100%;
+  }
+
+  .top-blueprint-item {
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+  }
+
+  .top-blueprint-item .btn-open {
+    grid-column: 2 / -1;
+    justify-self: start;
   }
 
   .results-heading,

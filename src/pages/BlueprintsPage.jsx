@@ -1,13 +1,30 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchByAuthor, fetchBlueprint } from '../features/blueprints/blueprintsSlice.js'
+import BlueprintForm from '../components/BlueprintForm.jsx'
 import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
+import {
+  createBlueprint,
+  fetchAuthors,
+  fetchBlueprint,
+  fetchByAuthor,
+  selectTopFiveBlueprints,
+} from '../features/blueprints/blueprintsSlice.js'
 
 export default function BlueprintsPage() {
   const dispatch = useDispatch()
-  const { byAuthor, current, status, error, currentStatus, currentError } = useSelector(
-    (s) => s.blueprints,
-  )
+  const {
+    byAuthor,
+    current,
+    authorsStatus,
+    authorsError,
+    byAuthorStatus,
+    byAuthorError,
+    currentStatus,
+    currentError,
+    createStatus,
+    createError,
+  } = useSelector((s) => s.blueprints)
+  const topFiveBlueprints = useSelector(selectTopFiveBlueprints)
   const [authorInput, setAuthorInput] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
   const items = byAuthor[selectedAuthor] || []
@@ -17,16 +34,28 @@ export default function BlueprintsPage() {
     [items],
   )
 
+  useEffect(() => {
+    dispatch(fetchAuthors())
+  }, [dispatch])
+
   const getBlueprints = (event) => {
     event.preventDefault()
     const author = authorInput.trim()
-    if (!author || status === 'loading') return
+    if (!author || byAuthorStatus === 'loading') return
     setSelectedAuthor(author)
     dispatch(fetchByAuthor(author))
   }
 
   const openBlueprint = (blueprint) => {
     dispatch(fetchBlueprint({ author: blueprint.author, name: blueprint.name }))
+  }
+
+  const createNewBlueprint = async (blueprint) => {
+    const action = await dispatch(createBlueprint(blueprint))
+    if (createBlueprint.fulfilled.match(action)) {
+      setAuthorInput(blueprint.author)
+      setSelectedAuthor(blueprint.author)
+    }
   }
 
   return (
@@ -54,11 +83,62 @@ export default function BlueprintsPage() {
             <button
               className="btn btn-primary"
               type="submit"
-              disabled={!authorInput.trim() || status === 'loading'}
+              disabled={!authorInput.trim() || byAuthorStatus === 'loading'}
             >
               Get blueprints
             </button>
           </form>
+        </section>
+
+        <section className="card ranking-panel" aria-labelledby="ranking-title">
+          <div className="results-heading">
+            <div>
+              <p className="eyebrow">Blueprint overview</p>
+              <h2 className="panel-title" id="ranking-title">
+                Top 5 by points
+              </h2>
+            </div>
+          </div>
+          {authorsStatus === 'loading' && (
+            <p className="status-message" role="status">
+              Loading blueprint overview...
+            </p>
+          )}
+          {authorsStatus === 'failed' && (
+            <p className="status-message error-message" role="alert">
+              Could not load the overview: {authorsError}
+            </p>
+          )}
+          {authorsStatus === 'succeeded' && !topFiveBlueprints.length && (
+            <p className="empty-message">No blueprints available yet.</p>
+          )}
+          {!!topFiveBlueprints.length && (
+            <ol className="top-blueprint-list">
+              {topFiveBlueprints.map((blueprint, index) => (
+                <li
+                  className="top-blueprint-item"
+                  key={`${blueprint.author}-${blueprint.name}`}
+                >
+                  <span className="rank-number">{index + 1}</span>
+                  <div className="top-blueprint-info">
+                    <strong>{blueprint.name}</strong>
+                    <span>{blueprint.author}</span>
+                  </div>
+                  <span className="top-blueprint-count">
+                    {blueprint.points?.length || 0} <small>pts</small>
+                  </span>
+                  <button
+                    className="btn btn-open"
+                    type="button"
+                    onClick={() => openBlueprint(blueprint)}
+                    disabled={currentStatus === 'loading'}
+                  >
+                    Open
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
         </section>
 
         <section className="card results-panel" aria-labelledby="results-title">
@@ -76,22 +156,25 @@ export default function BlueprintsPage() {
             )}
           </div>
 
-          {status === 'loading' && (
+          {byAuthorStatus === 'loading' && (
             <p className="status-message" role="status">
               Loading blueprints...
             </p>
           )}
-          {status === 'failed' && (
+          {byAuthorStatus === 'failed' && (
             <p className="status-message error-message" role="alert">
-              Could not load blueprints: {error}
+              Could not load blueprints: {byAuthorError}
             </p>
           )}
-          {!selectedAuthor && status !== 'loading' && (
+          {!selectedAuthor && byAuthorStatus !== 'loading' && (
             <p className="empty-message">Enter an author name to see their blueprints.</p>
           )}
-          {selectedAuthor && !items.length && status !== 'loading' && status !== 'failed' && (
-            <p className="empty-message">No blueprints found for this author.</p>
-          )}
+          {selectedAuthor &&
+            !items.length &&
+            byAuthorStatus !== 'loading' &&
+            byAuthorStatus !== 'failed' && (
+              <p className="empty-message">No blueprints found for this author.</p>
+            )}
 
           {!!items.length && (
             <div className="table-scroll">
@@ -137,6 +220,8 @@ export default function BlueprintsPage() {
             <strong>{totalPoints}</strong>
           </footer>
         </section>
+
+        <BlueprintForm onSubmit={createNewBlueprint} status={createStatus} error={createError} />
       </section>
 
       <section className="card blueprint-viewer" aria-labelledby="current-blueprint-title">

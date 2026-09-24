@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function BlueprintForm({ onSubmit }) {
+export default function BlueprintForm({ onSubmit, status = 'idle', error = null }) {
   const [author, setAuthor] = useState('')
   const [name, setName] = useState('')
   const [pointsJSON, setPointsJSON] = useState('[{"x":10,"y":10},{"x":40,"y":60}]')
@@ -9,7 +9,7 @@ export default function BlueprintForm({ onSubmit }) {
     e.preventDefault()
     try {
       const points = JSON.parse(pointsJSON)
-      onSubmit({ author, name, points })
+      onSubmit({ author: author.trim(), name: name.trim(), points })
     } catch (e) {
       alert('JSON de puntos inválido')
     }
@@ -51,7 +51,24 @@ export default function BlueprintForm({ onSubmit }) {
         />
       </div>
       <div style={{ marginTop: 12 }}>
-        <button className="btn primary">Guardar</button>
+        {status === 'loading' && (
+          <p className="status-message" role="status">
+            Saving blueprint...
+          </p>
+        )}
+        {status === 'failed' && (
+          <p className="status-message error-message" role="alert">
+            Could not save blueprint: {error}
+          </p>
+        )}
+        {status === 'succeeded' && (
+          <p className="status-message success-message" role="status">
+            Blueprint saved successfully.
+          </p>
+        )}
+        <button className="btn primary" disabled={status === 'loading'}>
+          Guardar
+        </button>
       </div>
     </form>
   )

@@ -9,6 +9,8 @@ vi.mock('../src/features/blueprints/blueprintsSlice.js', () => ({
   fetchAuthors: () => ({ type: 'blueprints/fetchAuthors' }),
   fetchByAuthor: (author) => ({ type: 'blueprints/fetchByAuthor', payload: author }),
   fetchBlueprint: (payload) => ({ type: 'blueprints/fetchBlueprint', payload }),
+  createBlueprint: (payload) => ({ type: 'blueprints/createBlueprint', payload }),
+  selectTopFiveBlueprints: (state) => state.blueprints.all || [],
 }))
 
 function makeStore(preloaded) {
@@ -16,12 +18,17 @@ function makeStore(preloaded) {
     name: 'blueprints',
     initialState: {
       authors: [],
+      all: [],
       byAuthor: {},
       current: null,
       currentStatus: 'idle',
       currentError: null,
-      status: 'idle',
-      error: null,
+      authorsStatus: 'idle',
+      authorsError: null,
+      byAuthorStatus: 'idle',
+      byAuthorError: null,
+      createStatus: 'idle',
+      createError: null,
       ...preloaded,
     },
     reducers: {},
@@ -56,7 +63,7 @@ describe('BlueprintsPage', () => {
         { x: 10, y: 10 },
       ],
     }
-    const store = makeStore({ byAuthor: { john: [blueprint] }, currentStatus: 'idle' })
+    const store = makeStore({ byAuthor: { john: [blueprint] } })
     const spy = vi.spyOn(store, 'dispatch')
 
     render(
