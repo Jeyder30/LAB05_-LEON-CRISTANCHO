@@ -28,10 +28,16 @@ export const fetchByAuthor = createAsyncThunk('blueprints/fetchByAuthor', async 
 export const fetchBlueprint = createAsyncThunk(
   'blueprints/fetchBlueprint',
   async ({ author, name }) => {
-    const { data } = await api.get(
-      `/blueprints/${encodeURIComponent(author)}/${encodeURIComponent(name)}`,
+    const response = await api.get(
+      `/v1/blueprints/${encodeURIComponent(author)}/${encodeURIComponent(name)}`,
     )
-    return data
+    const blueprint = response.data?.data ?? response.data
+
+    if (!blueprint || !Array.isArray(blueprint.points)) {
+      throw new Error('La respuesta del servidor no contiene los puntos del plano.')
+    }
+
+    return blueprint
   },
 )
 
@@ -46,6 +52,8 @@ const slice = createSlice({
     authors: [],
     byAuthor: {},
     current: null,
+    currentStatus: 'idle',
+    currentError: null,
     status: 'idle',
     error: null,
   },
@@ -79,6 +87,17 @@ const slice = createSlice({
       })
       .addCase(fetchBlueprint.fulfilled, (s, a) => {
         s.current = a.payload
+        s.currentStatus = 'succeeded'
+        s.currentError = null
+      })
+      .addCase(fetchBlueprint.pending, (s, a) => {
+        s.current = { ...a.meta.arg, points: [] }
+        s.currentStatus = 'loading'
+        s.currentError = null
+      })
+      .addCase(fetchBlueprint.rejected, (s, a) => {
+        s.currentStatus = 'failed'
+        s.currentError = a.error.message
       })
       .addCase(createBlueprint.fulfilled, (s, a) => {
         const bp = a.payload

@@ -5,7 +5,9 @@ import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
 
 export default function BlueprintsPage() {
   const dispatch = useDispatch()
-  const { byAuthor, current, status, error } = useSelector((s) => s.blueprints)
+  const { byAuthor, current, status, error, currentStatus, currentError } = useSelector(
+    (s) => s.blueprints,
+  )
   const [authorInput, setAuthorInput] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
   const items = byAuthor[selectedAuthor] || []
@@ -105,7 +107,11 @@ export default function BlueprintsPage() {
                         {bp.points?.length || 0}
                       </td>
                       <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
-                        <button className="btn" onClick={() => openBlueprint(bp)}>
+                        <button
+                          className="btn"
+                          onClick={() => openBlueprint(bp)}
+                          disabled={currentStatus === 'loading'}
+                        >
                           Open
                         </button>
                       </td>
@@ -121,6 +127,10 @@ export default function BlueprintsPage() {
 
       <section className="card">
         <h3 style={{ marginTop: 0 }}>Current blueprint: {current?.name || '—'}</h3>
+        {currentStatus === 'loading' && <p role="status">Cargando plano...</p>}
+        {currentStatus === 'failed' && (
+          <p role="alert">No fue posible abrir el plano: {currentError}</p>
+        )}
         <BlueprintCanvas points={current?.points || []} />
       </section>
     </div>
