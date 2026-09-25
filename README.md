@@ -163,7 +163,7 @@ VITE_USE_MOCK=true
 7. **CI/Lint/Format**
    - [x] Activa **GitHub Actions** (workflow incluido) → lint + test + build.
 8. **Docker (opcional)**
-   - [ ] Crea `Dockerfile` (+ `compose`) para front + backend.
+   - [x] Crea `Dockerfile` (+ `compose`) para front + backend.
 
 ## Criterios de evaluación
 
