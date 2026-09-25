@@ -18,6 +18,8 @@ Ver la especificación de glosario clave, consulta las [Definiciones del laborat
 
 ## Endpoints esperados (ajústalos si tu backend quedo diferente)
 
+Para consultar el backend de LAB03, el cliente usa `GET /api/v1/blueprints/{author}` y desempaqueta los planos desde `data`.
+
 - `GET /api/blueprints` → lista general o catálogo para derivar autores.
 - `GET /api/blueprints/{author}`
 - `GET /api/blueprints/{author}/{name}`
@@ -43,7 +45,13 @@ Crea un archivo `.env` en la raíz:
 
 ```variable
 VITE_API_BASE_URL=http://localhost:8080/api
+VITE_AUTH_BASE_URL=http://localhost:8080
+VITE_USE_MOCK=true
 ```
+
+`VITE_USE_MOCK=true` usa datos de prueba en memoria; cambia a `false` para consumir la API de LAB03 con Axios.
+
+El CRUD de actualizacion y eliminacion en modo real espera endpoints `PUT /api/v1/blueprints/{author}/{name}` y `DELETE /api/v1/blueprints/{author}/{name}`. LAB03 actualmente expone `PUT /api/v1/blueprints/{author}/{name}/points` para agregar puntos, pero no una ruta DELETE ni una ruta PUT para reemplazar el plano; esas rutas se deben implementar en el backend para usar el CRUD con `VITE_USE_MOCK=false`.
 
 > **Tip:** en producción usa variables seguras o un _reverse proxy_.
 
@@ -131,31 +139,31 @@ VITE_USE_MOCK=true
 ### Notas rápidas y recomendaciones
 
 - Para el canvas en tests con jsdom: agregar un mock de `HTMLCanvasElement.prototype.getContext` en `tests/setup.js`.
-- Para usar `@testing-library/jest-dom` con Vitest: en `tests/setup.js` importar `import '@testing-library/jest-dom'` y asegurarse de que Vitest provea el global `expect` (configurar `vitest.config.js` con la opción `test: { globals: true, setupFiles: './tests/setup.js' }`).
+- Para usar `@testing-library/jest-dom` con Vitest: importar `@testing-library/jest-dom/vitest` en `tests/setup.js`; la suite también limpia el DOM después de cada prueba.
 - Para la conmutación de servicios en Vite, usar `import.meta.env.VITE_USE_MOCK` para leer la variable en tiempo de ejecución.
 
 ## 📌 Recomendaciones y actividades sugeridas para el exito del laboratorio
 
 1. **Redux avanzado**
-   - [ ] Agrega estados `loading/error` por _thunk_ y muéstralos en la UI.
-   - [ ] Implementa _memo selectors_ para derivar el top-5 de blueprints por cantidad de puntos.
+   - [x] Agrega estados `loading/error` por _thunk_ y muéstralos en la UI.
+   - [x] Implementa _memo selectors_ para derivar el top-5 de blueprints por cantidad de puntos.
 2. **Rutas protegidas**
-   - [ ] Crea un componente `<PrivateRoute>` y protege la creación/edición.
+   - [x] Crea un componente `<PrivateRoute>` y protege la creación/edición.
 3. **CRUD completo**
-   - [ ] Implementa `PUT /api/blueprints/{author}/{name}` y `DELETE ...` en el slice y en la UI.
-   - [ ] Optimistic updates (revertir si falla).
+   - [x] Implementa `PUT /api/blueprints/{author}/{name}` y `DELETE ...` en el slice y en la UI.
+   - [x] Optimistic updates (revertir si falla).
 4. **Dibujo interactivo**
-   - [ ] Reemplaza el `svg` por un lienzo donde el usuario haga _click_ para agregar puntos.
-   - [ ] Botón “Guardar” que envíe el blueprint.
+   - [x] Reemplaza el `svg` por un lienzo donde el usuario haga _click_ para agregar puntos.
+   - [x] Botón “Guardar” que envíe el blueprint.
 5. **Errores y _Retry_**
-   - [ ] Si `GET` falla, muestra un banner y un botón **Reintentar** que dispare el thunk.
+   - [x] Si `GET` falla, muestra un banner y un botón **Reintentar** que dispare el thunk.
 6. **Testing**
-   - [ ] Pruebas de `blueprintsSlice` (reducers puros).
-   - [ ] Pruebas de componentes con Testing Library (render, interacción).
+   - [x] Pruebas de `blueprintsSlice` (reducers puros).
+   - [x] Pruebas de componentes con Testing Library (render, interacción).
 7. **CI/Lint/Format**
-   - [ ] Activa **GitHub Actions** (workflow incluido) → lint + test + build.
+   - [x] Activa **GitHub Actions** (workflow incluido) → lint + test + build.
 8. **Docker (opcional)**
-   - [ ] Crea `Dockerfile` (+ `compose`) para front + backend.
+   - [x] Crea `Dockerfile` (+ `compose`) para front + backend.
 
 ## Criterios de evaluación
 

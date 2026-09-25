@@ -9,6 +9,9 @@ vi.mock('../src/features/blueprints/blueprintsSlice.js', () => ({
   fetchAuthors: () => ({ type: 'blueprints/fetchAuthors' }),
   fetchByAuthor: (author) => ({ type: 'blueprints/fetchByAuthor', payload: author }),
   fetchBlueprint: (payload) => ({ type: 'blueprints/fetchBlueprint', payload }),
+  deleteBlueprint: (payload) => ({ type: 'blueprints/deleteBlueprint', payload }),
+  createBlueprint: (payload) => ({ type: 'blueprints/createBlueprint', payload }),
+  selectTopFiveBlueprints: (state) => state.blueprints.all || [],
 }))
 
 function makeStore(preloaded) {
@@ -16,10 +19,21 @@ function makeStore(preloaded) {
     name: 'blueprints',
     initialState: {
       authors: [],
+      all: [],
       byAuthor: {},
       current: null,
-      status: 'idle',
-      error: null,
+      currentStatus: 'idle',
+      currentError: null,
+      authorsStatus: 'idle',
+      authorsError: null,
+      byAuthorStatus: 'idle',
+      byAuthorError: null,
+      createStatus: 'idle',
+      createError: null,
+      updateStatus: 'idle',
+      updateError: null,
+      deleteStatus: 'idle',
+      deleteError: null,
       ...preloaded,
     },
     reducers: {},
@@ -28,7 +42,7 @@ function makeStore(preloaded) {
 }
 
 describe('BlueprintsPage', () => {
-  it('despacha fetchByAuthor al hacer click en Get blueprints', () => {
+  it('dispatches fetchByAuthor when the author search is submitted', () => {
     const store = makeStore()
     const spy = vi.spyOn(store, 'dispatch')
     render(
@@ -37,9 +51,43 @@ describe('BlueprintsPage', () => {
       </Provider>,
     )
 
-    fireEvent.change(screen.getByPlaceholderText(/Author/i), { target: { value: 'JohnConnor' } })
+    fireEvent.change(screen.getByPlaceholderText(/Author/i), {
+      target: { value: '  JohnConnor  ' },
+    })
     fireEvent.click(screen.getByText(/Get blueprints/i))
 
     expect(spy).toHaveBeenCalledWith({ type: 'blueprints/fetchByAuthor', payload: 'JohnConnor' })
+  })
+
+  it('shows the plan name and point count and dispatches fetchBlueprint from Open', () => {
+    const blueprint = {
+      author: 'john',
+      name: 'house',
+      points: [
+        { x: 0, y: 0 },
+        { x: 10, y: 10 },
+      ],
+    }
+    const store = makeStore({ byAuthor: { john: [blueprint] } })
+    const spy = vi.spyOn(store, 'dispatch')
+
+    render(
+      <Provider store={store}>
+        <BlueprintsPage />
+      </Provider>,
+    )
+
+    fireEvent.change(screen.getByPlaceholderText(/Author/i), { target: { value: 'john' } })
+    fireEvent.click(screen.getByText(/Get blueprints/i))
+
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getByText('house')).toBeInTheDocument()
+    expect(screen.getByText('2', { selector: '.point-count' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }))
+
+    expect(spy).toHaveBeenCalledWith({
+      type: 'blueprints/fetchBlueprint',
+      payload: { author: 'john', name: 'house' },
+    })
   })
 })

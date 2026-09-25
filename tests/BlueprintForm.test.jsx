@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+  import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import BlueprintForm from '../src/components/BlueprintForm.jsx'
 
@@ -9,7 +9,7 @@ describe('BlueprintForm', () => {
 
     fireEvent.change(screen.getByLabelText(/Autor/i), { target: { value: 'john' } })
     fireEvent.change(screen.getByLabelText(/Nombre/i), { target: { value: 'house' } })
-    fireEvent.change(screen.getByLabelText(/Puntos/i), {
+    fireEvent.change(screen.getByLabelText(/Puntos \(JSON\)/i), {
       target: { value: '[{"x":1,"y":2}]' },
     })
     fireEvent.submit(screen.getByText(/Guardar/i))

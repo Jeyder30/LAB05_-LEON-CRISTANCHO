@@ -1,14 +1,73 @@
-version: '3.9'
+name: blueprints-lab
+
 services:
-  web:
-    build: .
-    ports:
-      - '5173:4173'
+  postgres:
+    image: postgres:15
+    container_name: blueprints-db
     environment:
-      - VITE_API_BASE_URL=http://backend:8080/api
-    depends_on:
-      - backend
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: blueprintsdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - blueprints-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
-    image: ghcr.io/your-org/blueprints-backend:latest
+    build:
+      context: ../LAB03_ARSW_CRISTANCHO-LEON
+    image: blueprints-backend:local
+    container_name: blueprints-backend
     ports:
       - '8080:8080'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/blueprintsdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - blueprints-network
+
+  auth:
+    build:
+      context: ../Lab4_ARSW_Leon_Cristancho
+    image: blueprints-auth:local
+    container_name: blueprints-auth
+    ports:
+      - '8081:8080'
+    networks:
+      - blueprints-network
+
+  web:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: http://localhost:8080/api
+        VITE_AUTH_BASE_URL: http://localhost:8081
+        VITE_USE_MOCK: 'false'
+    image: blueprints-web:local
+    container_name: blueprints-web
+    ports:
+      - '5173:4173'
+    depends_on:
+      - backend
+      - auth
+    networks:
+      - blueprints-network
+
+volumes:
+  postgres_data:
+
+networks:
+  blueprints-network:
+    driver: bridge
